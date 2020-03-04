@@ -22,5 +22,6 @@ defmodule SsnService.Router do
   scope "/api/v1", SsnService do
     pipe_through :api
     get "/state-codes", StateCodesMappingsController, :index
+    post "/ssn", SsnController, :index
   end
 end
