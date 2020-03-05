@@ -3,26 +3,36 @@ defmodule SsnService.SsnController do
   use SsnService.Web, :controller
 
   def create(conn, _params) do
-    json = conn.body_params
-           |> IO.inspect(label: "Request body RAW MAP")
+    request = conn.body_params |> IO.inspect(label: "Request body RAW MAP")
 
-    #    IO.inspect validate(:id, json)
-    #    IO.inspect validate(:name, json)
-    #    IO.inspect validate(:state_code, json)
+    case validate_request(request) |> IO.inspect(label: "Validation response") do
+      {:ok, []} ->
+        json conn, create_ssn(request)
+      {:error, errors} ->
+        json conn |> put_status(422), %{"error": errors}
+      _ ->
+        json conn |> put_status(500), %{"error": "unexpected error"}
+    end
+  end
 
+  def create_ssn(json) do
+#    step 1: check if request id is unique
+    %{:result => :ok} |> IO.inspect(label: "create SSN response")
+  end
+
+  def validate_request(json) do
     required = [:id, :name, :state_code]
-
     errors = required
-             |> Enum.map(fn k -> validate(k, json) end)
-             |> Enum.filter(fn res -> res |> elem(0) == :error end)
-             |> Enum.map(fn err -> err |> elem(1) end)
+             |> Enum.map(fn key -> validate(key, json) end)
+             |> Enum.filter(fn result -> result |> elem(0) == :error end)
+             |> Enum.map(fn error -> error |> elem(1) end)
 
-
-    IO.inspect errors
-
-    res = %{"error": errors}
-
-    json conn, res
+    case errors |> length() do
+      0 ->
+        {:ok, []}
+      _ ->
+        {:error, errors}
+    end
   end
 
   defp validate(:id, rq) do
@@ -43,8 +53,7 @@ defmodule SsnService.SsnController do
   end
 
   defp validate_name(nil), do: {:error, %{"name": "is required"}}
-  defp validate_name(name) when name
-                                |> byte_size > 3, do: {:ok, name}
+  defp validate_name(name) when name |> byte_size > 3, do: {:ok, name}
   defp validate_name(_invalid), do: {:error, %{"name": "can't be less than 3"}}
 
   defp validate(:state_code, rq) do
@@ -59,21 +68,14 @@ defmodule SsnService.SsnController do
   end
 
   defp validate_state(nil), do: {:error, %{"state_code": "is required"}}
-  #  defp validate_state(state_code) when state_code |> fetch_state, do: {}
   defp validate_state(state_code) do
     state = fetch_state(state_code)
     cond do
+      #todo: simply check if exists in db?
       state.state_code == state_code -> {:ok, state_code}
       true -> {:error, %{"state_code": "invalid state"}}
     end
   end
-  #  defp validate_state(state_code) do
-  #    with {:ok, state} <- fetch_state(state_code) do
-  #      {:ok, state.state_code == state_code}
-  #    else
-  #      :error -> {:error, {:state_code, "invalid state"}}
-  #    end
-  #  end
   defp validate_state(_invalid), do: {:error, %{"state_code": "invalid state"}}
 
 end
