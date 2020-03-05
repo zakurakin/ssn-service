@@ -9,7 +9,16 @@ POST http://localhost:4000/api/v1/ssn
 Content-Type: application/json
 
 {"id": 1, "name": "John", "state_code": "TN"}
+
 ###
+
+POST http://localhost:4000/api/v1/ssn
+Content-Type: application/json
+
+{"name": "Jo", "state_code": "TN"}
+
+###
+//{"name": "John", "state_code": "TN"}
 
 GET http://localhost:4000/api/v1/state-codes
 Accept: application/json
