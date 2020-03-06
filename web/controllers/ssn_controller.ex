@@ -18,26 +18,26 @@ defmodule SsnService.SsnController do
           json conn, response
         else
           err ->
-            json conn |> put_status(422), %{"error": err |> elem(1)}
+            json conn |> put_status(422), %{"error": [err |> elem(1)]}
         end
 
       {:error, errors} ->
         json conn |> put_status(422), %{"error": errors}
 
       _ ->
-        json conn |> put_status(500), %{"error": "unexpected error"}
+        json conn |> put_status(500), %{"error": [%{"description": "unexpected error"}]}
     end
   end
 
   def create_response(user_record) do
-    {:ok, %{"security_number" => user_record.security_number, "request_id" => user_record.request_id}}
+    {:ok, %{"security_number": user_record.security_number, "request_id": user_record.request_id}}
   end
 
   def store_user_record(user_record) do
     if :ets.insert(:users, {user_record}) do
       {:ok, nil}
     else
-      {:error, %{"error" => "Failed to store SSN record"}}
+      {:error, %{"error": "Failed to store SSN record"}}
     end
   end
 
@@ -49,7 +49,7 @@ defmodule SsnService.SsnController do
       do
       {:ok, %{id: id, name: name, security_number: security_number, request_id: request_id}}
     else
-      err -> {:error, %{"error" => "Failed to create user record"}}
+      err -> {:error, %{"error": "Failed to create user record"}}
     end
 
   end
@@ -67,7 +67,7 @@ defmodule SsnService.SsnController do
       do
         {:ok, "#{state.code}-#{week_number |> format(2, "0")}-#{request_id |> format(4, "0")}"} |> IO.inspect(label: "st11")
     else
-      err -> {:error, %{"error" => "Failed to create SSN"}}
+      err -> {:error, %{"error": "Failed to create SSN"}}
     end
   end
 
