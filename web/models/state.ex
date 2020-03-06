@@ -6,4 +6,10 @@ defmodule SsnService.State do
     field :code, :string
     timestamps
   end
+
+  def changeset(model, params \\ :empty) do
+    model
+    |> cast(params, [:state_code, :code])
+    |> unique_constraint(:state_code)
+  end
 end
