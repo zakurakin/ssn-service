@@ -45,7 +45,8 @@ defmodule SsnService.Mixfile do
       {:cowboy, "~> 1.0"},
       {:jason, "~> 1.1"},
       {:ex2ms, "~> 1.0"},
-      {:timex, "~> 3.5"}
+      {:timex, "~> 3.5"},
+      {:credo, "~> 1.2"}
     ]
   end
 

@@ -4,28 +4,32 @@ defmodule SsnService.SsnController do
 
   use SsnService.Web, :controller
 
-  def create(conn, _params) do
-    request = conn.body_params |> IO.inspect(label: "Request body RAW MAP")
+  def create(conn, request) do
 
-    case validate_request(request) |> IO.inspect(label: "Validation response") do
+    case validate_request(request) do
       {:ok, []} ->
 
-        with {:ok, id} <- validate_unique_id(request) |> IO.inspect(label: "st1"),
-             {:ok, user_record} <- create_user_record(request) |> IO.inspect(label: "st2"),
-             {:ok, nil} <- store_user_record(user_record) |> IO.inspect(label: "st3"),
-             {:ok, response} <- create_response(user_record) |> IO.inspect(label: "st3.1")
+        with :ok <- validate_unique_id(request),
+             {:ok, user_record} <- create_user_record(request),
+             :ok <- store_user_record(user_record),
+             {:ok, response} <- create_response(user_record)
           do
-          json conn, response
+          json(conn, response)
         else
-          err ->
-            json conn |> put_status(422), %{"error": [err |> elem(1)]}
+          {:error, error} ->
+            conn
+            |> put_status(422)
+            |> json(%{"error": [error]})
         end
 
       {:error, errors} ->
-        json conn |> put_status(422), %{"error": errors}
-
+        conn
+        |> put_status(422)
+        |> json(%{"error": errors})
       _ ->
-        json conn |> put_status(500), %{"error": [%{"description": "unexpected error"}]}
+        conn
+        |> put_status(500)
+        |> json(%{"error": [%{"description": "unexpected error"}]})
     end
   end
 
@@ -35,44 +39,40 @@ defmodule SsnService.SsnController do
 
   def store_user_record(user_record) do
     if :ets.insert(:users, {user_record}) do
-      {:ok, nil}
+      :ok
     else
       {:error, %{"error": "Failed to store SSN record"}}
     end
   end
 
   def create_user_record(json) do
-    with {:ok, id} <- {:ok, json["id"]} |> IO.inspect(label: "st5"),
-         {:ok, name} <- {:ok, json["name"]} |> IO.inspect(label: "st6"),
-         {:ok, request_id} <- generate_request_id() |> IO.inspect(label: "st7"),
-         {:ok, security_number} <- generate_ssn(request_id, json["state_code"]) |> IO.inspect(label: "st8")
+    with {:ok, request_id} <- generate_request_id(),
+         {:ok, security_number} <- generate_ssn(request_id, json["state_code"])
       do
-      {:ok, %{id: id, name: name, security_number: security_number, request_id: request_id}}
+      {:ok, %{id: json["id"], name: json["name"], security_number: security_number, request_id: request_id}}
     else
-      err -> {:error, %{"error": "Failed to create user record"}}
+      _err -> {:error, %{"error": "Failed to create user record"}}
     end
 
   end
 
   def generate_request_id do
-    IO.inspect "get_request_id"
     {:ok, :ets.info(:users, :size) + 1}
   end
 
   def generate_ssn(request_id, state_code) do
-    IO.inspect "generate_ssn"
 
-    with {:ok, state} <- state_code |> load_state() |> IO.inspect(label: "st9"),
-         {:ok, week_number} <- {:ok, Timex.now() |> Timex.iso_triplet() |> elem(1)} |> IO.inspect(label: "st10")
+    with {:ok, state} <- load_state(state_code),
+         {:ok, week_number} <- {:ok, Timex.now() |> Timex.iso_triplet() |> elem(1)}
       do
-        {:ok, "#{state.code}-#{week_number |> format(2, "0")}-#{request_id |> format(4, "0")}"} |> IO.inspect(label: "st11")
+        {:ok, "#{state.code}-#{format(week_number, 2)}-#{format(request_id, 4)}"}
     else
-      err -> {:error, %{"error": "Failed to create SSN"}}
+      _err -> {:error, %{"error": "Failed to create SSN"}}
     end
   end
 
-  def format(num, amount, fill) do
-    num |> Integer.to_string |> String.pad_leading(amount, fill)
+  def format(num, amount) do
+    num |> Integer.to_string |> String.pad_leading(amount, "0")
   end
 
 end
