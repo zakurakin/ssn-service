@@ -35,7 +35,6 @@ defmodule SsnService.Web do
       import Ecto.Query
 
       import SsnService.Router.Helpers
-      import SsnService.Gettext
     end
   end
 
@@ -50,8 +49,6 @@ defmodule SsnService.Web do
       use Phoenix.HTML
 
       import SsnService.Router.Helpers
-      import SsnService.ErrorHelpers
-      import SsnService.Gettext
     end
   end
 
@@ -68,7 +65,6 @@ defmodule SsnService.Web do
       alias SsnService.Repo
       import Ecto
       import Ecto.Query
-      import SsnService.Gettext
     end
   end
 

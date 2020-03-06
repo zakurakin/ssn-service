@@ -4,7 +4,7 @@ defmodule SsnService.State do
   schema "states" do
     field :state_code, :string
     field :code, :string
-    timestamps
+    timestamps()
   end
 
   def changeset(model, params \\ :empty) do

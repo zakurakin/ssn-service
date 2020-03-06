@@ -6,8 +6,9 @@ defmodule SsnService.RequestValidator do
 
   def validate_unique_id(request) do
     if :ets.select(:users, select_user_record_by_id_fun(request["id"])) |> length() > 0 do
-      {:error, %{"id": "should be unique"}}
+      {:error, %{"id" => "should be unique"}}
     else
+
       :ok
     end
   end
@@ -38,23 +39,22 @@ defmodule SsnService.RequestValidator do
     end
   end
 
-  defp validate("id", nil), do: {:error, %{"id": "is required"}}
+  defp validate("id", nil), do: {:error, %{"id" => "is required"}}
   defp validate("id", id) when is_integer(id) and id > 0, do: {:ok, id}
-  defp validate("id", _invalid), do: {:error, %{"id": "should be an integer, greater than 0"}}
+  defp validate("id", _invalid), do: {:error, %{"id" => "should be an integer, greater than 0"}}
 
-  defp validate("name", nil), do: {:error, %{"name": "is required"}}
+  defp validate("name", nil), do: {:error, %{"name" => "is required"}}
   defp validate("name", name) when byte_size(name) > 3, do: {:ok, name}
-  defp validate("name", _invalid), do: {:error, %{"name": "can't be less than 3"}}
+  defp validate("name", _invalid), do: {:error, %{"name" => "can't be less than 3"}}
 
-  defp validate("state_code", nil), do: {:error, %{"state_code": "is required"}}
+  defp validate("state_code", nil), do: {:error, %{"state_code" => "is required"}}
   defp validate("state_code", state_code) do
     with {:ok, state} <- load_state(state_code) do
       {:ok, state.code}
     else
       _err ->
-        {:error, %{"state_code": "invalid state"}}
+        {:error, %{"state_code" => "invalid state"}}
     end
   end
-  defp validate("state_code", _invalid), do: {:error, %{"state_code": "invalid state"}}
 
 end
