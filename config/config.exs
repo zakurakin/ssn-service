@@ -14,8 +14,7 @@ config :ssn_service, SsnService.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "JyfnxVexPgw1e2fFjRFnVFtIg50C8XOLdrf4DxVTZnvc8cctFtwPIazIktWGi8W/",
   render_errors: [view: SsnService.ErrorView, accepts: ~w(html json)],
-  pubsub: [name: SsnService.PubSub,
-           adapter: Phoenix.PubSub.PG2]
+  pubsub: [name: SsnService.PubSub, adapter: Phoenix.PubSub.PG2]
 
 # Configures Elixir's Logger
 config :logger, :console,
@@ -24,4 +23,4 @@ config :logger, :console,
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
-import_config "#{Mix.env}.exs"
+import_config "#{Mix.env()}.exs"

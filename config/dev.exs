@@ -13,7 +13,6 @@ config :ssn_service, SsnService.Endpoint,
   check_origin: false,
   watchers: []
 
-
 # Watch static and templates for browser reloading.
 config :ssn_service, SsnService.Endpoint,
   live_reload: [
